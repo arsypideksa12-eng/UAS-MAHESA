@@ -1,0 +1,226 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Blueprints
+    function isValidPosition(data) {
+      return data.keys().hasAll(['id', 'title', 'department', 'dailyRate', 'description', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'title', 'department', 'dailyRate', 'description', 'createdAt', 'updatedAt'])
+        && isValidId(data.id) && data.id.size() <= 64
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 100
+        && data.department is string && data.department.size() >= 2 && data.department.size() <= 80
+        && data.dailyRate is number && data.dailyRate >= 0 && data.dailyRate <= 100000000
+        && data.description is string && data.description.size() <= 300
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidWorkSchedule(data) {
+      return data.keys().hasAll(['id', 'shiftName', 'officeLocation', 'workDays', 'startTime', 'endTime', 'lateToleranceMinutes', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'shiftName', 'officeLocation', 'workDays', 'startTime', 'endTime', 'lateToleranceMinutes', 'updatedAt'])
+        && isValidId(data.id) && data.id.size() <= 64
+        && data.shiftName is string && data.shiftName.size() >= 2 && data.shiftName.size() <= 100
+        && data.officeLocation is string && data.officeLocation.size() >= 2 && data.officeLocation.size() <= 150
+        && data.workDays is list && data.workDays.size() >= 1 && data.workDays.size() <= 7
+        && data.workDays[0] is string
+        && data.workDays.hasOnly(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'])
+        && data.startTime is string && data.startTime.size() == 5 && data.startTime.matches('^([01]\\d|2[0-3]):[0-5]\\d$')
+        && data.endTime is string && data.endTime.size() == 5 && data.endTime.matches('^([01]\\d|2[0-3]):[0-5]\\d$')
+        && data.lateToleranceMinutes is number && data.lateToleranceMinutes >= 0 && data.lateToleranceMinutes <= 180
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidEmployee(data) {
+      return data.keys().hasAll([
+          'id', 'authUid', 'nik', 'fullName', 'email', 'phone', 'address',
+          'positionId', 'positionTitle', 'department', 'dailyRateOverride',
+          'joinDate', 'status', 'role', 'avatarUrl', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'authUid', 'nik', 'fullName', 'email', 'phone', 'address',
+          'positionId', 'positionTitle', 'department', 'dailyRateOverride',
+          'joinDate', 'status', 'role', 'avatarUrl', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id) && data.id.size() <= 64
+        && data.authUid is string && data.authUid.size() <= 128
+        && data.nik is string && data.nik.size() >= 2 && data.nik.size() <= 32
+        && data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 120
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 160
+        && data.phone is string && data.phone.size() <= 32
+        && data.address is string && data.address.size() <= 300
+        && isValidId(data.positionId) && data.positionId.size() <= 64
+        && data.positionTitle is string && data.positionTitle.size() >= 2 && data.positionTitle.size() <= 100
+        && data.department is string && data.department.size() >= 2 && data.department.size() <= 80
+        && data.dailyRateOverride is number && data.dailyRateOverride >= 0 && data.dailyRateOverride <= 100000000
+        && data.joinDate is string && data.joinDate.size() == 10 && data.joinDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.status in ['Aktif', 'Nonaktif']
+        && data.role in ['admin', 'employee']
+        && data.avatarUrl is string && data.avatarUrl.size() <= 250000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAttendance(data) {
+      return data.keys().hasAll([
+          'id', 'employeeId', 'authUid', 'employeeEmail', 'employeeName', 'positionTitle',
+          'date', 'checkInTime', 'checkInPhoto', 'checkInNote',
+          'checkOutTime', 'checkOutPhoto', 'checkOutNote',
+          'status', 'workMinutes', 'dailyWageApplied', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'employeeId', 'authUid', 'employeeEmail', 'employeeName', 'positionTitle',
+          'date', 'checkInTime', 'checkInPhoto', 'checkInNote',
+          'checkOutTime', 'checkOutPhoto', 'checkOutNote',
+          'status', 'workMinutes', 'dailyWageApplied', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id) && data.id.size() <= 100
+        && isValidId(data.employeeId) && data.employeeId.size() <= 64
+        && data.authUid is string && data.authUid.size() <= 128
+        && data.employeeEmail is string && data.employeeEmail.size() >= 3 && data.employeeEmail.size() <= 160
+        && data.employeeName is string && data.employeeName.size() >= 2 && data.employeeName.size() <= 120
+        && data.positionTitle is string && data.positionTitle.size() >= 2 && data.positionTitle.size() <= 100
+        && data.date is string && data.date.size() == 10 && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.checkInTime is string && data.checkInTime.size() >= 4 && data.checkInTime.size() <= 20
+        && data.checkInPhoto is string && data.checkInPhoto.size() >= 10 && data.checkInPhoto.size() <= 350000
+        && data.checkInNote is string && data.checkInNote.size() <= 200
+        && data.checkOutTime is string && data.checkOutTime.size() <= 20
+        && data.checkOutPhoto is string && data.checkOutPhoto.size() <= 350000
+        && data.checkOutNote is string && data.checkOutNote.size() <= 200
+        && data.status in ['Tepat Waktu', 'Terlambat', 'Selesai', 'Izin']
+        && data.workMinutes is number && data.workMinutes >= 0 && data.workMinutes <= 1440
+        && data.dailyWageApplied is number && data.dailyWageApplied >= 0 && data.dailyWageApplied <= 100000000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLeaveRequest(data) {
+      return data.keys().hasAll([
+          'id', 'employeeId', 'authUid', 'employeeEmail', 'employeeName', 'positionTitle',
+          'leaveType', 'startDate', 'endDate', 'totalDays', 'reason',
+          'status', 'adminNote', 'reviewedBy', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'employeeId', 'authUid', 'employeeEmail', 'employeeName', 'positionTitle',
+          'leaveType', 'startDate', 'endDate', 'totalDays', 'reason',
+          'status', 'adminNote', 'reviewedBy', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id) && data.id.size() <= 64
+        && isValidId(data.employeeId) && data.employeeId.size() <= 64
+        && data.authUid is string && data.authUid.size() <= 128
+        && data.employeeEmail is string && data.employeeEmail.size() >= 3 && data.employeeEmail.size() <= 160
+        && data.employeeName is string && data.employeeName.size() >= 2 && data.employeeName.size() <= 120
+        && data.positionTitle is string && data.positionTitle.size() >= 2 && data.positionTitle.size() <= 100
+        && data.leaveType in ['Cuti Tahunan', 'Sakit', 'Izin Khusus', 'Cuti Melahirkan']
+        && data.startDate is string && data.startDate.size() == 10 && data.startDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.endDate is string && data.endDate.size() == 10 && data.endDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.totalDays is number && data.totalDays >= 1 && data.totalDays <= 90
+        && data.reason is string && data.reason.size() >= 3 && data.reason.size() <= 500
+        && data.status in ['Menunggu', 'Disetujui', 'Ditolak']
+        && data.adminNote is string && data.adminNote.size() <= 300
+        && data.reviewedBy is string && data.reviewedBy.size() <= 120
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPayroll(data) {
+      return data.keys().hasAll([
+          'id', 'employeeId', 'employeeEmail', 'employeeName', 'positionTitle',
+          'period', 'presentDays', 'lateDays', 'approvedLeaveDays', 'dailyRate',
+          'grossBasePay', 'bonus', 'deduction', 'netPay', 'status', 'notes', 'paidAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'employeeId', 'employeeEmail', 'employeeName', 'positionTitle',
+          'period', 'presentDays', 'lateDays', 'approvedLeaveDays', 'dailyRate',
+          'grossBasePay', 'bonus', 'deduction', 'netPay', 'status', 'notes', 'paidAt',
+          'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id) && data.id.size() <= 80
+        && isValidId(data.employeeId) && data.employeeId.size() <= 64
+        && data.employeeEmail is string && data.employeeEmail.size() >= 3 && data.employeeEmail.size() <= 160
+        && data.employeeName is string && data.employeeName.size() >= 2 && data.employeeName.size() <= 120
+        && data.positionTitle is string && data.positionTitle.size() >= 2 && data.positionTitle.size() <= 100
+        && data.period is string && data.period.size() == 7 && data.period.matches('^\\d{4}-\\d{2}$')
+        && data.presentDays is number && data.presentDays >= 0 && data.presentDays <= 31
+        && data.lateDays is number && data.lateDays >= 0 && data.lateDays <= 31
+        && data.approvedLeaveDays is number && data.approvedLeaveDays >= 0 && data.approvedLeaveDays <= 31
+        && data.dailyRate is number && data.dailyRate >= 0 && data.dailyRate <= 100000000
+        && data.grossBasePay is number && data.grossBasePay >= 0 && data.grossBasePay <= 3100000000
+        && data.bonus is number && data.bonus >= 0 && data.bonus <= 1000000000
+        && data.deduction is number && data.deduction >= 0 && data.deduction <= 1000000000
+        && data.netPay is number && data.netPay >= 0 && data.netPay <= 4100000000
+        && data.status in ['Draft', 'Dibayarkan']
+        && data.notes is string && data.notes.size() <= 300
+        && data.paidAt is string && data.paidAt.size() <= 30
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Demo-mode HRM Collections (strictly schema-validated, real-time multi-device)
+    match /positions/{positionId} {
+      allow get: if isValidId(positionId);
+      allow list: if true;
+      allow create: if isValidId(positionId) && isValidPosition(incoming()) && incoming().id == positionId && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(positionId) && isValidPosition(incoming()) && incoming().id == existing().id && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isValidId(positionId);
+    }
+
+    match /workSchedules/{scheduleId} {
+      allow get: if isValidId(scheduleId);
+      allow list: if true;
+      allow create: if isValidId(scheduleId) && isValidWorkSchedule(incoming()) && incoming().id == scheduleId && incoming().updatedAt == request.time;
+      allow update: if isValidId(scheduleId) && isValidWorkSchedule(incoming()) && incoming().id == existing().id && incoming().updatedAt == request.time;
+      allow delete: if isValidId(scheduleId);
+    }
+
+    match /employees/{employeeId} {
+      allow get: if isValidId(employeeId);
+      allow list: if true;
+      allow create: if isValidId(employeeId) && isValidEmployee(incoming()) && incoming().id == employeeId && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(employeeId) && isValidEmployee(incoming()) && incoming().id == existing().id && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isValidId(employeeId);
+    }
+
+    match /attendances/{attendanceId} {
+      allow get: if isValidId(attendanceId);
+      allow list: if true;
+      allow create: if isValidId(attendanceId) && isValidAttendance(incoming()) && incoming().id == attendanceId && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(attendanceId) && isValidAttendance(incoming()) && incoming().id == existing().id && incoming().employeeId == existing().employeeId && incoming().date == existing().date && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isValidId(attendanceId);
+    }
+
+    match /leaveRequests/{leaveId} {
+      allow get: if isValidId(leaveId);
+      allow list: if true;
+      allow create: if isValidId(leaveId) && isValidLeaveRequest(incoming()) && incoming().id == leaveId && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(leaveId) && isValidLeaveRequest(incoming()) && incoming().id == existing().id && incoming().employeeId == existing().employeeId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isValidId(leaveId);
+    }
+
+    match /payrolls/{payrollId} {
+      allow get: if isValidId(payrollId);
+      allow list: if true;
+      allow create: if isValidId(payrollId) && isValidPayroll(incoming()) && incoming().id == payrollId && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(payrollId) && isValidPayroll(incoming()) && incoming().id == existing().id && incoming().employeeId == existing().employeeId && incoming().period == existing().period && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isValidId(payrollId);
+    }
+  }
+}

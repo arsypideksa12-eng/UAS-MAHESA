@@ -1,0 +1,565 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Registered administrator account with full backoffice management access.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "name", "createdAt"]
+    },
+    "Position": {
+      "title": "Position",
+      "description": "Job position / Jabatan with daily salary rate in IDR.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "dailyRate": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "title", "department", "dailyRate", "description", "createdAt", "updatedAt"]
+    },
+    "WorkSchedule": {
+      "title": "WorkSchedule",
+      "description": "Organization working days, office hours, and late tolerance configuration.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "shiftName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "officeLocation": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 150
+        },
+        "workDays": {
+          "type": "array",
+          "description": "Active work days (max 7)."
+        },
+        "startTime": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 5,
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "endTime": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 5,
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "lateToleranceMinutes": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "shiftName", "officeLocation", "workDays", "startTime", "endTime", "lateToleranceMinutes", "updatedAt"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Employee biodata, position linkage, and daily wage configuration.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authUid": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "nik": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32
+        },
+        "fullName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "positionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "positionTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "dailyRateOverride": {
+          "type": "number"
+        },
+        "joinDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Aktif", "Nonaktif"]
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "employee"]
+        },
+        "avatarUrl": {
+          "type": "string",
+          "maxLength": 250000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "authUid",
+        "nik",
+        "fullName",
+        "email",
+        "phone",
+        "address",
+        "positionId",
+        "positionTitle",
+        "department",
+        "dailyRateOverride",
+        "joinDate",
+        "status",
+        "role",
+        "avatarUrl",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily selfie check-in and check-out record for an employee.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "employeeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authUid": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "employeeEmail": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "employeeName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "positionTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "date": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "checkInTime": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 20
+        },
+        "checkInPhoto": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 350000
+        },
+        "checkInNote": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "checkOutTime": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "checkOutPhoto": {
+          "type": "string",
+          "maxLength": 350000
+        },
+        "checkOutNote": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Tepat Waktu", "Terlambat", "Selesai", "Izin"]
+        },
+        "workMinutes": {
+          "type": "number"
+        },
+        "dailyWageApplied": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "employeeId",
+        "authUid",
+        "employeeEmail",
+        "employeeName",
+        "positionTitle",
+        "date",
+        "checkInTime",
+        "checkInPhoto",
+        "checkInNote",
+        "checkOutTime",
+        "checkOutPhoto",
+        "checkOutNote",
+        "status",
+        "workMinutes",
+        "dailyWageApplied",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LeaveRequest": {
+      "title": "LeaveRequest",
+      "description": "Employee leave submission (Pengajuan Cuti) and admin approval state.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "employeeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authUid": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "employeeEmail": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "employeeName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "positionTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "leaveType": {
+          "type": "string",
+          "enum": ["Cuti Tahunan", "Sakit", "Izin Khusus", "Cuti Melahirkan"]
+        },
+        "startDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "endDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "totalDays": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Menunggu", "Disetujui", "Ditolak"]
+        },
+        "adminNote": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "reviewedBy": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "employeeId",
+        "authUid",
+        "employeeEmail",
+        "employeeName",
+        "positionTitle",
+        "leaveType",
+        "startDate",
+        "endDate",
+        "totalDays",
+        "reason",
+        "status",
+        "adminNote",
+        "reviewedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Payroll": {
+      "title": "Payroll",
+      "description": "Monthly daily-rate payroll run per employee.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "employeeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "employeeEmail": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "employeeName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "positionTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "period": {
+          "type": "string",
+          "minLength": 7,
+          "maxLength": 7,
+          "pattern": "^\\d{4}-\\d{2}$"
+        },
+        "presentDays": {
+          "type": "number"
+        },
+        "lateDays": {
+          "type": "number"
+        },
+        "approvedLeaveDays": {
+          "type": "number"
+        },
+        "dailyRate": {
+          "type": "number"
+        },
+        "grossBasePay": {
+          "type": "number"
+        },
+        "bonus": {
+          "type": "number"
+        },
+        "deduction": {
+          "type": "number"
+        },
+        "netPay": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Dibayarkan"]
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "paidAt": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "employeeId",
+        "employeeEmail",
+        "employeeName",
+        "positionTitle",
+        "period",
+        "presentDays",
+        "lateDays",
+        "approvedLeaveDays",
+        "dailyRate",
+        "grossBasePay",
+        "bonus",
+        "deduction",
+        "netPay",
+        "status",
+        "notes",
+        "paidAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Authorized admin accounts."
+    },
+    "/positions/{positionId}": {
+      "schema": { "$ref": "#/entities/Position" },
+      "description": "Job positions and their daily salary rates."
+    },
+    "/workSchedules/{scheduleId}": {
+      "schema": { "$ref": "#/entities/WorkSchedule" },
+      "description": "Active work days and shift hours."
+    },
+    "/employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/Employee" },
+      "description": "Employee master records and biodata."
+    },
+    "/attendances/{attendanceId}": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Selfie check-in and check-out logs."
+    },
+    "/leaveRequests/{leaveId}": {
+      "schema": { "$ref": "#/entities/LeaveRequest" },
+      "description": "Employee leave requests and approvals."
+    },
+    "/payrolls/{payrollId}": {
+      "schema": { "$ref": "#/entities/Payroll" },
+      "description": "Daily-rate monthly payroll records."
+    }
+  }
+}
